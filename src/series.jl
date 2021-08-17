@@ -68,7 +68,7 @@ function fetch_series(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractStr
         "apikey" : "$(apikey())"}""",
         status_exception = false)
     if res.status == 200
-        response = JSON.parse(String(res.body))
+        response = JSON.parse(String(res.body), null = missing)
         reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
     else
         error = JSON.parse(String(res.body))["error"]

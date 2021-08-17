@@ -32,6 +32,9 @@
     @test "series_id" in DataFrames.names(res)
     @test "values" in DataFrames.names(res)
 
+    res = fetch_series("GDP_YE")
+    @test all(.!isnothing.(res.values))
+
     @testset "Errors" begin
         @test_throws ErrorException("`*` is not a valid series code") fetch_series("*")
         @test_throws ErrorException("No series `valid_but_nonexistent` exists") fetch_series("valid_but_nonexistent")
