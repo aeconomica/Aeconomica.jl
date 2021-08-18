@@ -7,7 +7,11 @@
     @test "vintage" in DataFrames.names(res)
     @test "series_id" in DataFrames.names(res)
     @test "values" in DataFrames.names(res)
-    @test res.vintage[1] <= "2021-02-01"
+    @test res.vintage[1] <= Dates.Date("2021-02-01")
+    @test eltype(res.dates) <: Dates.Date
+    @test eltype(res.vintage) <: Dates.Date
+    @test eltype(res.series_id) <: String
+    @test eltype(res.values) <: Union{Float64, Missing}
 
     res = fetch_series_as_at(["CPI", "CPI_SYD"], "2021-02-01")
     @test res isa DataFrames.DataFrame
@@ -16,7 +20,7 @@
     @test "vintage" in DataFrames.names(res)
     @test "series_id" in DataFrames.names(res)
     @test "values" in DataFrames.names(res)
-    @test res.vintage[1] <= "2021-02-01"
+    @test res.vintage[1] <= Dates.Date("2021-02-01")
 
     res = fetch_series_as_at(["CPI" => "2021-02-01", "CPI_SYD" => "2021-02-01"])
     @test res isa DataFrames.DataFrame
@@ -25,7 +29,7 @@
     @test "vintage" in DataFrames.names(res)
     @test "series_id" in DataFrames.names(res)
     @test "values" in DataFrames.names(res)
-    @test res.vintage[1] <= "2021-02-01"
+    @test res.vintage[1] <= Dates.Date("2021-02-01")
 
     @testset "Errors" begin
         @test_throws ErrorException("`*` is not a valid series code") fetch_series_as_at("*", "2021-02-01")

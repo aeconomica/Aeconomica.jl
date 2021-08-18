@@ -1,6 +1,7 @@
 using Aeconomica
 using Test
 using DataFrames
+import Dates
 
 # Fetching without setting a key fails
 set_apikey("")

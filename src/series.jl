@@ -69,7 +69,16 @@ function fetch_series(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractStr
         status_exception = false)
     if res.status == 200
         response = JSON.parse(String(res.body), null = missing)
-        reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
+        df = reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
+        df.dates = Dates.Date.(df.dates)
+        df.vintage = Dates.Date.(df.vintage)
+        df.values = if any(ismissing.(df.values))
+            Vector{Union{Float64, Missing}}(df.values)
+        else
+            Vector{Float64}(df.values)
+        end
+
+        return df
     else
         error = JSON.parse(String(res.body))["error"]
         if error[1:21] == "500 Internal Error - "
