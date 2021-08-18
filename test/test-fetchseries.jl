@@ -7,6 +7,10 @@
     @test "vintage" in DataFrames.names(res)
     @test "series_id" in DataFrames.names(res)
     @test "values" in DataFrames.names(res)
+    @test eltype(res.dates) <: Dates.Date
+    @test eltype(res.vintage) <: Dates.Date
+    @test eltype(res.series_id) <: String
+    @test eltype(res.values) <: Union{Float64, Missing}
 
     res = fetch_series("CPI", "latest")
     @test res isa DataFrames.DataFrame

@@ -43,8 +43,17 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
         "apikey" : "$(apikey())"}""",
         status_exception = false)
     result = if res.status == 200
-        response = JSON.parse(String(res.body))
-        reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
+        response = JSON.parse(String(res.body), null = missing)
+        df = reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
+        df.dates = Dates.Date.(df.dates)
+        df.vintage = Dates.Date.(df.vintage)
+        df.values = if any(ismissing.(df.values))
+            Vector{Union{Float64, Missing}}(df.values)
+        else
+            Vector{Float64}(df.values)
+        end
+
+        df
     else
         error = JSON.parse(String(res.body))["error"]
         if error[1:21] == "500 Internal Error - "
@@ -67,7 +76,7 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
             "apikey" : "$(apikey())"}""",
             status_exception = false)
         structure = if res.status == 200
-            JSON.parse(String(res.body))
+            JSON.parse(String(res.body), null = missing)
         else
             error = JSON.parse(String(res.body))["error"]
             if error[1:21] == "500 Internal Error - "

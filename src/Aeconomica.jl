@@ -1,6 +1,6 @@
 module Aeconomica
 
-import HTTP, JSON, DataFrames
+import HTTP, JSON, DataFrames, Dates
 
 export fetch_series, set_apikey, fetch_series_as_at, fetch_dataset
 
