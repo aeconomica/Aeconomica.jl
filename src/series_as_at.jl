@@ -80,11 +80,15 @@ function fetch_series_as_at(series::AbstractArray{T, 1}) where T <: Pair{<:Abstr
         return df
     else
         error = JSON.parse(String(res.body))["error"]
-        if error[1:21] == "500 Internal Error - "
+        if error isa AbstractString && length(error) > 21 && error[1:21] == "500 Internal Error - "
             error = error[22:end]
             throw(ErrorException(error))
         else
-            throw(ErrorException(error))
+            if error isa Dict && haskey(error, "message")
+                throw(ErrorException(error["message"]))
+            else
+                throw(ErrorException("Error accessing API; try again later"))
+            end
         end
     end
 end
