@@ -11,11 +11,11 @@ Vintage can be any of `current` (alias `latest`, default), `previous` or a date 
 form.
 
 `dimensions` can be one of :code or :name. This dictates whether the values for each dimension
-of the dataset are returned as the codes for each dimension, or the long names that correspond
-to those codes.
+in the dataset are returned as the codes for each dimension (the default), or (for :name) the
+long names that correspond to those codes.
 
-Returns a dataframe, including columns: `dates`, `vintage`, `series_id`, `values`. The dataframe
-will also have columns for each of the dimensions of the dataset.
+Returns a dataframe, including columns: `values`, `vintage`. The dataframe will also have columns
+for each of the dimensions of the dataset.
 """
 function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:AbstractString, <:AbstractArray{<:AbstractString, 1}} = Dict{String, Array{String, 1}}(), vintage::AbstractString = "latest", dimensions::Symbol = :code)
     check_valid_vintage(vintage)
@@ -44,7 +44,8 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
         status_exception = false)
     result = if res.status == 200
         response = JSON.parse(String(res.body), null = missing)
-        df = reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
+        
+        df = DataFrames.DataFrame(response)
         df.dates = Dates.Date.(df.dates)
         df.vintage = Dates.Date.(df.vintage)
         df.values = if any(ismissing.(df.values))
@@ -56,11 +57,15 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
         df
     else
         error = JSON.parse(String(res.body))["error"]
-        if error[1:21] == "500 Internal Error - "
+        if error isa AbstractString && length(error) > 21 && error[1:21] == "500 Internal Error - "
             error = error[22:end]
             throw(ErrorException(error))
         else
-            throw(ErrorException(error))
+            if error isa Dict && haskey(error, "message")
+                throw(ErrorException(error["message"]))
+            else
+                throw(ErrorException("Error accessing API; try again later"))
+            end
         end
     end
 
@@ -79,11 +84,15 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
             JSON.parse(String(res.body), null = missing)
         else
             error = JSON.parse(String(res.body))["error"]
-            if error[1:21] == "500 Internal Error - "
+            if error isa AbstractString && length(error) > 21 && error[1:21] == "500 Internal Error - "
                 error = error[22:end]
                 throw(ErrorException(error))
             else
-                throw(ErrorException(error))
+                if error isa Dict && haskey(error, "message")
+                    throw(ErrorException(error["message"]))
+                else
+                    throw(ErrorException("Error accessing API; try again later"))
+                end
             end
         end
 

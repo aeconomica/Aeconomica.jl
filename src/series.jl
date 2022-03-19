@@ -6,7 +6,7 @@ Fetch series with series_id `code`.
 Vintage can be any of `current` (alias `latest`, default), `previous` or a date in YYYY-MM-DD
 form.
 
-Returns a dataframe with four colums: `dates`, `vintage`, `series_id`, `values`.
+Returns a dataframe with four colums: `dates`,  `series_id`, `values`, `vintage`.
 """
 function fetch_series(code::AbstractString, vintage::AbstractString = "latest")
     fetch_series([code => vintage])
@@ -21,7 +21,7 @@ vintage given by `vintage`.
 Vintage can be any of `current` (alias `latest`, default), `previous` or a date in YYYY-MM-DD
 form.
 
-Returns a dataframe with four colums: `dates`, `as_at_date`, `series_id`, `values`.
+Returns a dataframe with four colums: `dates`,  `series_id`, `values`, `vintage`.
 """
 function fetch_series(codes::AbstractArray{<:AbstractString, 1}, vintage::AbstractString = "latest")
     series = map(c -> c => vintage, codes)
@@ -39,7 +39,7 @@ Each element of the list is a pair `series_code` => `vintage`. Vintage must be e
 Vintage can be any of `current` (alias `latest`), `previous` or a date in YYYY-MM-DD
 form.
 
-Returns a dataframe with four colums: `dates`, `as_at_date`, `series_id`, `values`.
+Returns a dataframe with four colums: `dates`,  `series_id`, `values`, `vintage`.
 
 # Example
 ```
@@ -81,11 +81,15 @@ function fetch_series(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractStr
         return df
     else
         error = JSON.parse(String(res.body))["error"]
-        if error[1:21] == "500 Internal Error - "
+        if error isa AbstractString && length(error) > 21 && error[1:21] == "500 Internal Error - "
             error = error[22:end]
             throw(ErrorException(error))
         else
-            throw(ErrorException(error))
+            if error isa Dict && haskey(error, "message")
+                throw(ErrorException(error["message"]))
+            else
+                throw(ErrorException("Error accessing API; try again later"))
+            end
         end
     end
 end
