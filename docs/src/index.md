@@ -2,7 +2,8 @@
 
 ![Lifecycle](https://img.shields.io/badge/lifecycle-maturing-blue.svg)
 ![CI](https://github.com/aeconomica/Aeconomica.jl/workflows/CI/badge.svg)
-[![codecov.io](http://codecov.io/github/aeconomica/Aeconomica.jl/coverage.svg?branch=master)](http://codecov.io/github/aeconomica/Aeconomica.jl?branch=master)
+[![codecov.io](http://codecov.io/github/aeconomica/Aeconomica.jl/coverage.svg?branch=main)](http://codecov.io/github/aeconomica/Aeconomica.jl?branch=main)
+[![Documentation](https://img.shields.io/badge/docs-dev-blue.svg)](https://aeconomica.github.io/Aeconomica.jl/dev)
 
 Aeconomica.jl provides quick and easy access to the [Aeconomica](https://aeconomica.io) data API.
 
