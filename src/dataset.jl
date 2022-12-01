@@ -26,7 +26,7 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
     end
 
     restrictions_string = if length(restrictions) > 0
-        """"restrictions" : $(JSON.json(restrictions)),"""
+        """"restrictions" : $(JSON3.write(restrictions)),"""
     else
         ""
     end
@@ -43,11 +43,13 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
         "apikey" : "$(apikey())"}""",
         status_exception = false)
     result = if res.status == 200
-        response = JSON.parse(String(res.body), null = missing)
+        response = JSON3.read(String(res.body))
         
         df = DataFrames.DataFrame(response)
         df.dates = Dates.Date.(df.dates)
         df.vintage = Dates.Date.(df.vintage)
+        # replace nothing with missing - JSON3 treats null as nothing, but we want missing in this context
+        df.values = map(x -> isnothing(x) ? missing : x, df.values)
         df.values = if any(ismissing.(df.values))
             Vector{Union{Float64, Missing}}(df.values)
         else
@@ -56,7 +58,7 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
 
         df
     else
-        error = JSON.parse(String(res.body))["error"]
+        error = JSON3.read(String(res.body))[:error]
         if res.status == 400
             throw(ErrorException(error[19:end]))
         elseif res.status == 401
@@ -64,8 +66,8 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
         elseif res.status == 403
             throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
         else
-            if error isa Dict && haskey(error, "message")
-                throw(ErrorException(error["message"]))
+            if error isa Dict && haskey(error, :message)
+                throw(ErrorException(error[:message]))
             else
                 throw(ErrorException("Error accessing API; try again later"))
             end
@@ -84,9 +86,9 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
             "apikey" : "$(apikey())"}""",
             status_exception = false)
         structure = if res.status == 200
-            JSON.parse(String(res.body), null = missing)
+            JSON3.read(String(res.body))
         else
-            error = JSON.parse(String(res.body))["error"]
+            error = JSON3.read(String(res.body))[:error]
             if res.status == 400
                 throw(ErrorException(error[19:end]))
             elseif res.status == 401
@@ -94,17 +96,17 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
             elseif res.status == 403
                 throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
             else
-                if error isa Dict && haskey(error, "message")
-                    throw(ErrorException(error["message"]))
+                if error isa Dict && haskey(error, :message)
+                    throw(ErrorException(error[:message]))
                 else
                     throw(ErrorException("Error accessing API; try again later"))
                 end
             end
         end
 
-        for dim in structure["dimensions"]
+        for dim in structure[:dimensions]
             #Iterate over each dimension, and replace the codes in the column of the df with their name
-            result[!, dim["dimname"]] = map(code -> dim["options"][findfirst(map(x -> code == x["code"], dim["options"]))]["name"], result[:, dim["dimname"]])
+            result[!, dim[:dimname]] = map(code -> dim[:options][findfirst(map(x -> code == x[:code], dim[:options]))][:name], result[:, dim[:dimname]])
         end
     end
 
