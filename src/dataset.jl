@@ -57,9 +57,12 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
         df
     else
         error = JSON.parse(String(res.body))["error"]
-        if error isa AbstractString && length(error) > 21 && error[1:21] == "500 Internal Error - "
-            error = error[22:end]
-            throw(ErrorException(error))
+        if res.status == 400
+            throw(ErrorException(error[19:end]))
+        elseif res.status == 401
+            throw(ErrorException("Authorization required. Did you forget to provide an API key?"))
+        elseif res.status == 403
+            throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
         else
             if error isa Dict && haskey(error, "message")
                 throw(ErrorException(error["message"]))
@@ -84,9 +87,12 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
             JSON.parse(String(res.body), null = missing)
         else
             error = JSON.parse(String(res.body))["error"]
-            if error isa AbstractString && length(error) > 21 && error[1:21] == "500 Internal Error - "
-                error = error[22:end]
-                throw(ErrorException(error))
+            if res.status == 400
+                throw(ErrorException(error[19:end]))
+            elseif res.status == 401
+                throw(ErrorException("Authorization required. Did you forget to provide an API key?"))
+            elseif res.status == 403
+                throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
             else
                 if error isa Dict && haskey(error, "message")
                     throw(ErrorException(error["message"]))
