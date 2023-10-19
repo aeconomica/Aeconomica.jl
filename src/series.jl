@@ -89,6 +89,10 @@ function fetch_series(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractStr
             throw(ErrorException("Authorization required. Did you forget to provide an API key?"))
         elseif res.status == 403
             throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
+        elseif res.status == 429
+            @warn "Rate limit for requests exceeded; sleeping for five second and trying again. Please try grouping multiple requests into a single, larger request to avoid this."
+            sleep(5)
+            return fetch_series(series)
         else
             if error isa Dict && haskey(error, :message)
                 throw(ErrorException(error[:message]))
