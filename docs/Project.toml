@@ -1,5 +1,6 @@
 [deps]
+Aeconomica = "0d812600-d994-4edd-8da3-8a645bb00235"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 
 [compat]
-Documenter = "~0.24"
+Documenter = "1"
