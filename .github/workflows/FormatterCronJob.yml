@@ -7,11 +7,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - name: Check if Julia is already available in the PATH
+        id: julia_in_path
+        run: which julia
+        continue-on-error: true
+      - name: Install Julia, but only if it is not already available in the PATH
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: '1'
+          arch: ${{ runner.arch }}
+        if: steps.julia_in_path.outcome != 'success'
       - name: Install JuliaFormatter and format
         run: |
-          julia  -e 'import Pkg; Pkg.add("JuliaFormatter")'
-          julia  -e 'using JuliaFormatter; format(".")'
+          julia -e 'import Pkg; Pkg.add("JuliaFormatter")'
+          julia -e 'using JuliaFormatter; format(".")'
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v5
