@@ -30,9 +30,6 @@ jobs:
       - uses: codecov/codecov-action@v2
         with:
           fail_ci_if_error: true
-      - name: Build and deploy docs
+      - uses: julia-actions/julia-docdeploy@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          julia --color=yes --project=docs -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
-          julia --project=docs/ docs/make.jl
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
