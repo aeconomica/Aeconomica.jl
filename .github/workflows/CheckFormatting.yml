@@ -1,8 +1,11 @@
-name: Run JuliaFormatter against main once a week
+name: Run JuliaFormatter on main
+
 on:
-  schedule:
-    - cron: 0 0 * * 1
-  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
 jobs:
   build:
     runs-on: ubuntu-latest
