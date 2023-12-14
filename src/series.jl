@@ -8,8 +8,8 @@ form.
 
 Returns a dataframe with four colums: `dates`,  `series_id`, `values`, `vintage`.
 """
-function fetch_series(code::AbstractString, vintage::AbstractString = "latest")
-    fetch_series([code => vintage])
+function fetch_series(code::AbstractString, vintage::AbstractString="latest")
+    return fetch_series([code => vintage])
 end
 
 """
@@ -23,10 +23,12 @@ form.
 
 Returns a dataframe with four colums: `dates`,  `series_id`, `values`, `vintage`.
 """
-function fetch_series(codes::AbstractArray{<:AbstractString, 1}, vintage::AbstractString = "latest")
+function fetch_series(
+    codes::AbstractArray{<:AbstractString,1}, vintage::AbstractString="latest"
+)
     series = map(c -> c => vintage, codes)
 
-    fetch_series(series)
+    return fetch_series(series)
 end
 
 """
@@ -46,15 +48,16 @@ Returns a dataframe with four colums: `dates`,  `series_id`, `values`, `vintage`
 fetch_series(["CPI" => "latest", "CPI_SYD" => "previous"])
 ````
 """
-function fetch_series(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractString, <:AbstractString}
-    map(p -> begin 
+function fetch_series(
+    series::AbstractArray{T,1}
+) where {T<:Pair{<:AbstractString,<:AbstractString}}
+    map(p -> begin
         check_valid_code(p[1])
         check_valid_vintage(p[2])
     end, series)
 
     series_req = join(
-        map(p -> """{ "id" : "$(p[1])", "vintage" : "$(p[2])" }""", series),
-        ", "
+        map(p -> """{ "id" : "$(p[1])", "vintage" : "$(p[2])" }""", series), ", "
     )
 
     res = HTTP.request(
@@ -65,8 +68,9 @@ function fetch_series(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractStr
         "series": [
             $series_req
         ],
-        "apikey" : "$(apikey())"}""",
-        status_exception = false)
+        "apikey" : "$(apikey())"}""";
+        status_exception=false,
+    )
     if res.status == 200
         response = JSON3.read(String(res.body))
         df = reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
@@ -75,7 +79,7 @@ function fetch_series(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractStr
         # replace nothing with missing - JSON3 treats null as nothing, but we want missing in this context
         df.values = map(x -> isnothing(x) ? missing : x, df.values)
         df.values = if any(ismissing.(df.values))
-            Vector{Union{Float64, Missing}}(df.values)
+            Vector{Union{Float64,Missing}}(df.values)
         else
             Vector{Float64}(df.values)
         end
@@ -86,9 +90,17 @@ function fetch_series(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractStr
         if res.status == 400
             throw(ErrorException(error[19:end]))
         elseif res.status == 401
-            throw(ErrorException("Authorization required. Did you forget to provide an API key?"))
+            throw(
+                ErrorException(
+                    "Authorization required. Did you forget to provide an API key?"
+                ),
+            )
         elseif res.status == 403
-            throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
+            throw(
+                ErrorException(
+                    "Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource.",
+                ),
+            )
         elseif res.status == 429
             @warn "Rate limit for requests exceeded; sleeping for five second and trying again. Please try grouping multiple requests into a single, larger request to avoid this."
             sleep(5)
