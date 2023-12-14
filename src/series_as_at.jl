@@ -8,8 +8,8 @@ as_at_date must be a date in YYYY-MM-DD form.
 
 Returns a dataframe with four colums: `dates`, `as_at_date`, `series_id`, `values`.
 """
-function fetch_series_as_at(code::AbstractString, as_at_date::AbstractString = "latest")
-    fetch_series_as_at([code => as_at_date])
+function fetch_series_as_at(code::AbstractString, as_at_date::AbstractString="latest")
+    return fetch_series_as_at([code => as_at_date])
 end
 
 """
@@ -22,10 +22,12 @@ as_at_date must be a date in YYYY-MM-DD form.
 
 Returns a dataframe with four colums: `dates`, `as_at_date`, `series_id`, `values`.
 """
-function fetch_series_as_at(codes::AbstractArray{<:AbstractString, 1}, as_at_date::AbstractString)
+function fetch_series_as_at(
+    codes::AbstractArray{<:AbstractString,1}, as_at_date::AbstractString
+)
     series = map(c -> c => as_at_date, codes)
 
-    fetch_series_as_at(series)
+    return fetch_series_as_at(series)
 end
 
 """
@@ -45,15 +47,16 @@ Returns a dataframe with four colums: `dates`, `as_at_date`, `series_id`, `value
 fetch_series_as_at(["CPI" => "2021-01-01", "CPI_SYD" => "2019-01-01"])
 ````
 """
-function fetch_series_as_at(series::AbstractArray{T, 1}) where T <: Pair{<:AbstractString, <:AbstractString}
-    map(p -> begin 
+function fetch_series_as_at(
+    series::AbstractArray{T,1}
+) where {T<:Pair{<:AbstractString,<:AbstractString}}
+    map(p -> begin
         check_valid_code(p[1])
         check_valid_as_at_date(p[2])
     end, series)
 
     series_req = join(
-        map(p -> """{ "id" : "$(p[1])", "as_at_date" : "$(p[2])" }""", series),
-        ", "
+        map(p -> """{ "id" : "$(p[1])", "as_at_date" : "$(p[2])" }""", series), ", "
     )
 
     res = HTTP.request(
@@ -64,8 +67,9 @@ function fetch_series_as_at(series::AbstractArray{T, 1}) where T <: Pair{<:Abstr
         "series": [
             $series_req
         ],
-        "apikey" : "$(apikey())"}""",
-        status_exception = false)
+        "apikey" : "$(apikey())"}""";
+        status_exception=false,
+    )
     if res.status == 200
         response = JSON3.read(String(res.body))
         df = reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
@@ -74,7 +78,7 @@ function fetch_series_as_at(series::AbstractArray{T, 1}) where T <: Pair{<:Abstr
         # replace nothing with missing - JSON3 treats null as nothing, but we want missing in this context
         df.values = map(x -> isnothing(x) ? missing : x, df.values)
         df.values = if any(ismissing.(df.values))
-            Vector{Union{Float64, Missing}}(df.values)
+            Vector{Union{Float64,Missing}}(df.values)
         else
             Vector{Float64}(df.values)
         end
@@ -85,9 +89,17 @@ function fetch_series_as_at(series::AbstractArray{T, 1}) where T <: Pair{<:Abstr
         if res.status == 400
             throw(ErrorException(error[19:end]))
         elseif res.status == 401
-            throw(ErrorException("Authorization required. Did you forget to provide an API key?"))
+            throw(
+                ErrorException(
+                    "Authorization required. Did you forget to provide an API key?"
+                ),
+            )
         elseif res.status == 403
-            throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
+            throw(
+                ErrorException(
+                    "Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource.",
+                ),
+            )
         else
             if error isa Dict && haskey(error, :message)
                 throw(ErrorException(error[:message]))

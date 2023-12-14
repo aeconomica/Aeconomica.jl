@@ -17,7 +17,14 @@ long names that correspond to those codes.
 Returns a dataframe, including columns: `values`, `vintage`. The dataframe will also have columns
 for each of the dimensions of the dataset.
 """
-function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:AbstractString, <:AbstractArray{<:AbstractString, 1}} = Dict{String, Array{String, 1}}(), vintage::AbstractString = "latest", dimensions::Symbol = :code)
+function fetch_dataset(
+    dataset_id::AbstractString;
+    restrictions::Dict{<:AbstractString,<:AbstractArray{<:AbstractString,1}}=Dict{
+        String,Array{String,1}
+    }(),
+    vintage::AbstractString="latest",
+    dimensions::Symbol=:code,
+)
     check_valid_vintage(vintage)
     check_valid_code(dataset_id)
 
@@ -40,18 +47,19 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
             "dataset" : "$dataset_id",
             $(restrictions_string)
             "vintage" : "$vintage",
-        "apikey" : "$(apikey())"}""",
-        status_exception = false)
+        "apikey" : "$(apikey())"}""";
+        status_exception=false,
+    )
     result = if res.status == 200
         response = JSON3.read(String(res.body))
-        
+
         df = DataFrames.DataFrame(response)
         df.dates = Dates.Date.(df.dates)
         df.vintage = Dates.Date.(df.vintage)
         # replace nothing with missing - JSON3 treats null as nothing, but we want missing in this context
         df.values = map(x -> isnothing(x) ? missing : x, df.values)
         df.values = if any(ismissing.(df.values))
-            Vector{Union{Float64, Missing}}(df.values)
+            Vector{Union{Float64,Missing}}(df.values)
         else
             Vector{Float64}(df.values)
         end
@@ -62,9 +70,17 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
         if res.status == 400
             throw(ErrorException(error[19:end]))
         elseif res.status == 401
-            throw(ErrorException("Authorization required. Did you forget to provide an API key?"))
+            throw(
+                ErrorException(
+                    "Authorization required. Did you forget to provide an API key?"
+                ),
+            )
         elseif res.status == 403
-            throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
+            throw(
+                ErrorException(
+                    "Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource.",
+                ),
+            )
         else
             if error isa Dict && haskey(error, :message)
                 throw(ErrorException(error[:message]))
@@ -83,8 +99,9 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
             [("Content-Type", "application/json")],
             """{
                 "dataset" : "$dataset_id",
-            "apikey" : "$(apikey())"}""",
-            status_exception = false)
+            "apikey" : "$(apikey())"}""";
+            status_exception=false,
+        )
         structure = if res.status == 200
             JSON3.read(String(res.body))
         else
@@ -92,9 +109,17 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
             if res.status == 400
                 throw(ErrorException(error[19:end]))
             elseif res.status == 401
-                throw(ErrorException("Authorization required. Did you forget to provide an API key?"))
+                throw(
+                    ErrorException(
+                        "Authorization required. Did you forget to provide an API key?"
+                    ),
+                )
             elseif res.status == 403
-                throw(ErrorException("Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource."))
+                throw(
+                    ErrorException(
+                        "Unauthorized. Check your API key and try again, or you may not have permissions for the requested resource.",
+                    ),
+                )
             else
                 if error isa Dict && haskey(error, :message)
                     throw(ErrorException(error[:message]))
@@ -106,9 +131,13 @@ function fetch_dataset(dataset_id::AbstractString; restrictions::Dict{<:Abstract
 
         for dim in structure[:dimensions]
             #Iterate over each dimension, and replace the codes in the column of the df with their name
-            result[!, dim[:dimname]] = map(code -> dim[:options][findfirst(map(x -> code == x[:code], dim[:options]))][:name], result[:, dim[:dimname]])
+            result[!, dim[:dimname]] = map(
+                code ->
+                    dim[:options][findfirst(map(x -> code == x[:code], dim[:options]))][:name],
+                result[:, dim[:dimname]],
+            )
         end
     end
 
-    result
+    return result
 end
