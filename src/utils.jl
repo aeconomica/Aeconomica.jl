@@ -1,6 +1,6 @@
 function check_valid_code(code)
     return occursin(r"^[\sa-zA-Z0-9_]+$", code) ||
-        throw(ErrorException("`$code` is not a valid series code"))
+           throw(ErrorException("`$code` is not a valid series code"))
 end
 
 function check_valid_date(date)
