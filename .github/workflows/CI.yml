@@ -29,7 +29,7 @@ jobs:
         env:
           AECONOMICA_TEST_KEY: ${{ secrets.AECONOMICA_TEST_KEY }} # API key for aeconomica
       - uses: julia-actions/julia-processcoverage@v1
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
       - uses: julia-actions/julia-docdeploy@v1
