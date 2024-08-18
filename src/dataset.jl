@@ -42,12 +42,11 @@ function fetch_dataset(
     res = HTTP.request(
         "POST",
         "https://aeconomica.io/api/v1/dataset",
-        [("Content-Type", "application/json")],
+        [("Content-Type", "application/json"), ("Authorization", "Bearer $(apikey())")],
         """{
             "dataset" : "$dataset_id",
             $(restrictions_string)
-            "vintage" : "$vintage",
-        "apikey" : "$(apikey())"}""";
+            "vintage" : "$vintage"}""";
         status_exception=false,
     )
     result = if res.status == 200
@@ -96,10 +95,9 @@ function fetch_dataset(
         res = HTTP.request(
             "POST",
             "https://aeconomica.io/api/v1/dataset_structure",
-            [("Content-Type", "application/json")],
+            [("Content-Type", "application/json"), ("Authorization", "Bearer $(apikey())")],
             """{
-                "dataset" : "$dataset_id",
-            "apikey" : "$(apikey())"}""";
+                "dataset" : "$dataset_id"}""";
             status_exception=false,
         )
         structure = if res.status == 200

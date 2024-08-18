@@ -1,5 +1,9 @@
 # Reference
 
+```@docs
+set_apikey
+```
+
 ## Series
 
 ```@docs

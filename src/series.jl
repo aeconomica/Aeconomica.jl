@@ -16,7 +16,7 @@ end
     fetch_series(codes::AbstractArray{<:AbstractString, 1}, vintage::AbstractString)
 
 Fetch a list of series with codes given by the array `codes`. For all series, fetch the
-vintage given by `vintage`. 
+vintage given by `vintage`.
 
 Vintage can be any of `current` (alias `latest`, default), `previous` or a date in YYYY-MM-DD
 form.
@@ -63,12 +63,11 @@ function fetch_series(
     res = HTTP.request(
         "POST",
         "https://aeconomica.io/api/v1/fetchseries",
-        [("Content-Type", "application/json")],
+        [("Content-Type", "application/json"), ("Authorization", "Bearer $(apikey())")],
         """{
         "series": [
             $series_req
-        ],
-        "apikey" : "$(apikey())"}""";
+        ]}""";
         status_exception=false,
     )
     if res.status == 200

@@ -62,12 +62,11 @@ function fetch_series_as_at(
     res = HTTP.request(
         "POST",
         "https://aeconomica.io/api/v1/fetchseries",
-        [("Content-Type", "application/json")],
+        [("Content-Type", "application/json"), ("Authorization", "Bearer $(apikey())")],
         """{
         "series": [
             $series_req
-        ],
-        "apikey" : "$(apikey())"}""";
+        ]}""";
         status_exception=false,
     )
     if res.status == 200
