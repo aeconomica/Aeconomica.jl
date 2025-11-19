@@ -11,7 +11,7 @@ const stored_apikey = Ref{String}("")
 
 function __init__()
     if haskey(ENV, "AECONOMICA_APIKEY")
-        const stored_apikey[] = ENV["AECONOMICA_APIKEY"]
+        stored_apikey[] = ENV["AECONOMICA_APIKEY"]
     end
 end
 
