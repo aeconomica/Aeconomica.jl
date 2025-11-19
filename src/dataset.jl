@@ -48,6 +48,7 @@ function fetch_dataset(
             $(restrictions_string)
             "vintage" : "$vintage"}""";
         status_exception=false,
+        retry_non_idempotent=true,
     )
     result = if res.status == 200
         response = JSON3.read(String(res.body))
@@ -98,6 +99,7 @@ function fetch_dataset(
             [("Content-Type", "application/json"), ("Authorization", "Bearer $(apikey())")],
             """{
                 "dataset" : "$dataset_id"}""";
+            retry_non_idempotent=true,
             status_exception=false,
         )
         structure = if res.status == 200

@@ -69,6 +69,7 @@ function fetch_series(
             $series_req
         ]}""";
         status_exception=false,
+        retry_non_idempotent=true,
     )
     if res.status == 200
         response = JSON3.read(String(res.body))
