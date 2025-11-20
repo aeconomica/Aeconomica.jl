@@ -1,7 +1,7 @@
 name = "Aeconomica"
 uuid = "0d812600-d994-4edd-8da3-8a645bb00235"
 authors = ["Angus Moore <18376371+angusmoore@users.noreply.github.com>"]
-version = "1.0.1-DEV"
+version = "1.0.1"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
