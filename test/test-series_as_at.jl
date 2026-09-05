@@ -21,7 +21,9 @@
     @test "values" in DataFrames.names(res)
     @test res.vintage[1] <= Dates.Date("2021-02-01")
 
-    res = fetch_series_as_at(["ABSCPIQTR" => "2021-02-01", "ABSCPIQTR_SYD_NSA" => "2021-02-01"])
+    res = fetch_series_as_at([
+        "ABSCPIQTR" => "2021-02-01", "ABSCPIQTR_SYD_NSA" => "2021-02-01"
+    ])
     @test res isa DataFrames.DataFrame
     @test DataFrames.ncol(res) == 4
     @test "dates" in DataFrames.names(res)
@@ -59,6 +61,8 @@
         ])
         @test_throws ErrorException(
             "Invalid as_at_date `xxxx-yy-mm`. Date must be in form YYYY-MM-DD."
-        ) fetch_series_as_at(["ABSCPIQTR" => "2021-02-01", "ABSCPIQTR_SYD_NSA" => "xxxx-yy-mm"])
+        ) fetch_series_as_at([
+            "ABSCPIQTR" => "2021-02-01", "ABSCPIQTR_SYD_NSA" => "xxxx-yy-mm"
+        ])
     end
 end
