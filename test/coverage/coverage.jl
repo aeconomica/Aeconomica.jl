@@ -5,5 +5,5 @@ get(ENV, "TRAVIS_JULIA_VERSION", nothing) == "1.3" || exit(0)
 using Coverage
 
 cd(joinpath(@__DIR__, "..", "..")) do
-    Codecov.submit(Codecov.process_folder())
+    return Codecov.submit(Codecov.process_folder())
 end
