@@ -71,11 +71,11 @@ function fetch_series_as_at(
         retry_non_idempotent=true,
     )
     if res.status == 200
-        response = JSON3.read(String(res.body))
+        response = JSON.parse(String(res.body))
         df = reduce(vcat, map(x -> DataFrames.DataFrame(x), response))
         df.dates = Dates.Date.(df.dates)
         df.vintage = Dates.Date.(df.vintage)
-        # replace nothing with missing - JSON3 treats null as nothing, but we want missing in this context
+        # replace nothing with missing - JSON treats null as nothing, but we want missing in this context
         df.values = map(x -> isnothing(x) ? missing : x, df.values)
         df.values = if any(ismissing.(df.values))
             Vector{Union{Float64,Missing}}(df.values)
@@ -85,7 +85,7 @@ function fetch_series_as_at(
 
         return df
     else
-        error = JSON3.read(String(res.body))[:error]
+        error = JSON.parse(String(res.body))[:error]
         if res.status == 400
             throw(ErrorException(error[19:end]))
         elseif res.status == 401

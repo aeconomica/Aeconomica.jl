@@ -1,7 +1,7 @@
 module Aeconomica
 
 using HTTP: HTTP
-using JSON3: JSON3
+using JSON: JSON
 using DataFrames: DataFrames
 using Dates: Dates
 

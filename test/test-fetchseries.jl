@@ -1,5 +1,5 @@
 @testset "Fetchseries" begin
-    res = fetch_series("CPI")
+    res = fetch_series("ABSCPIQTR")
     @test res isa DataFrames.DataFrame
     @test DataFrames.ncol(res) == 4
     @test "dates" in DataFrames.names(res)
@@ -11,7 +11,7 @@
     @test eltype(res.series_id) <: String
     @test eltype(res.values) <: Union{Float64,Missing}
 
-    res = fetch_series("CPI", "latest")
+    res = fetch_series("ABSCPIQTR", "latest")
     @test res isa DataFrames.DataFrame
     @test DataFrames.ncol(res) == 4
     @test "dates" in DataFrames.names(res)
@@ -19,7 +19,7 @@
     @test "series_id" in DataFrames.names(res)
     @test "values" in DataFrames.names(res)
 
-    res = fetch_series(["CPI", "CPI_SYD"], "latest")
+    res = fetch_series(["ABSCPIQTR", "ABSCPIQTR_SYD_NSA"], "latest")
     @test res isa DataFrames.DataFrame
     @test DataFrames.ncol(res) == 4
     @test "dates" in DataFrames.names(res)
@@ -27,7 +27,7 @@
     @test "series_id" in DataFrames.names(res)
     @test "values" in DataFrames.names(res)
 
-    res = fetch_series(["CPI" => "latest", "CPI_SYD" => "latest"])
+    res = fetch_series(["ABSCPIQTR" => "latest", "ABSCPIQTR_SYD_NSA" => "latest"])
     @test res isa DataFrames.DataFrame
     @test DataFrames.ncol(res) == 4
     @test "dates" in DataFrames.names(res)
@@ -45,26 +45,26 @@
         )
         @test_throws ErrorException(
             "Invalid vintage `abc`. Options are a date (in form YYYY-MM-DD) or one of `current` (alias `latest`) or `previous`",
-        ) fetch_series("CPI", "abc")
+        ) fetch_series("ABSCPIQTR", "abc")
 
         @test_throws ErrorException("`*` is not a valid series code") fetch_series([
-            "CPI", "*"
+            "ABSCPIQTR", "*"
         ])
         @test_throws ErrorException("No series `valid_but_nonexistent` exists") fetch_series([
-            "CPI", "valid_but_nonexistent"
+            "ABSCPIQTR", "valid_but_nonexistent"
         ])
         @test_throws ErrorException(
             "Invalid vintage `abc`. Options are a date (in form YYYY-MM-DD) or one of `current` (alias `latest`) or `previous`",
-        ) fetch_series(["CPI", "CPI_SYD"], "abc")
+        ) fetch_series(["ABSCPIQTR", "ABSCPIQTR_SYD_NSA"], "abc")
 
         @test_throws ErrorException("`*` is not a valid series code") fetch_series([
-            "CPI" => "latest", "*" => "latest"
+            "ABSCPIQTR" => "latest", "*" => "latest"
         ])
         @test_throws ErrorException("No series `valid_but_nonexistent` exists") fetch_series([
-            "CPI" => "latest", "valid_but_nonexistent" => "latest"
+            "ABSCPIQTR" => "latest", "valid_but_nonexistent" => "latest"
         ])
         @test_throws ErrorException(
             "Invalid vintage `abc`. Options are a date (in form YYYY-MM-DD) or one of `current` (alias `latest`) or `previous`",
-        ) fetch_series(["CPI" => "latest", "CPI_SYD" => "abc"])
+        ) fetch_series(["ABSCPIQTR" => "latest", "ABSCPIQTR_SYD_NSA" => "abc"])
     end
 end
